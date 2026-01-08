@@ -1,0 +1,22 @@
+```puml
+@startuml
+
+!include C4_Context.puml
+
+Person(user, "User", "A user of the Warmhouse system")
+System_Ext(sensor, "Sensor", "Sensors owned by the user")
+
+System_Boundary(warmhouse_system, "Warmhouse") {
+    System(warmhouse, "Warmhouse System", "System managing memberships, schedules, and payments")
+    Person(engineer, "Engineer", "An engineer managing the system")
+}
+
+Rel(warmhouse,sensor,"Requests temperature data", REST API)
+Rel(user,warmhouse,"Requests sensor info")
+Rel(user,warmhouse,"Requests installation of a sensor")
+Rel(engineer,user,"Installs sensors")
+Rel(warmhouse,engineer,"Sends a user request for sensor installation")
+
+@enduml
+
+```
