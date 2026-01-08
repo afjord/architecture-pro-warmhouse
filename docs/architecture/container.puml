@@ -1,0 +1,42 @@
+@startuml
+
+!include C4_Container.puml
+
+Person(user, "User", "A user of the Warmhouse system")
+Container_Ext(device, "Smart devices", "Smart devices, such as relays, switches, etc.")
+Container_Ext(sensor, "Sensors", "Various sensors, such as temperature or motion")
+Container_Ext(ip_camera, "IP camera", "CCTV camera")
+
+Container_Boundary(warmhouse_system, "Warmhouse") {
+    Container(web_app, "Warmhouse website", "The website that users interact with")
+
+    Container(devices_management, "Device Management Service", "A service that stores information and device status and allows to register or deregister devices")
+    ContainerDb(devices_db, "Devices db", "A database that stores information about devices")
+
+    Container(auth_service, "Authentication Service", "Authentication service")
+    ContainerDb(users_db, "Users DB", "A database that stores information about users")
+
+    Container(commands, "Commands Service", "A service that allows to send commands to devices")
+
+    Container(telemetry, "Telemetry", "A service that stores devices telemetry")
+    ContainerDb(telemetry_db, "Telemetry DB", "Stores time series of sensor readings")
+
+    Container(video_service, "Video Processing Service", "A service that processes and stores video from CCTV cameras")
+    ContainerDb(video_db, "CCTV DB", "Stores video from cameras")
+
+    Rel(auth_service,users_db,"Requests information about a user")
+    Rel(commands,device,"Sends a command to a device")
+    Rel(devices_management,devices_db,"Requests information about devices owned by a user")
+    Rel(web_app,auth_service,"Requests user's authentication")
+    Rel(web_app,commands,"Sends a command from a user to a device")
+    Rel(web_app,devices_management,"Requests information about device and manages devices")
+    Rel(telemetry,telemetry_db, "")
+    Rel(sensor,telemetry, "Sends readings", HTTPS)
+    Rel(ip_camera,video_service, "Sends a video stream")
+    Rel(video_service,video_db, "")
+    Rel(web_app,video_service, "Requests video from CCTV cameras")
+}
+
+Rel(user,web_app,"Manages all devices in the home, adds new devices")
+
+@enduml
