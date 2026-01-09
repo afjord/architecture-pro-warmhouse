@@ -16,25 +16,22 @@ Container_Boundary(warmhouse_system, "Warmhouse") {
     Container(auth_service, "Authentication Service", "Authentication service")
     ContainerDb(users_db, "Users DB", "A database that stores information about users")
 
-    Container(commands, "Commands Service", "A service that allows to send commands to devices")
-
     Container(telemetry, "Telemetry", "A service that stores devices telemetry")
     ContainerDb(telemetry_db, "Telemetry DB", "Stores time series of sensor readings")
 
     Container(video_service, "Video Processing Service", "A service that processes and stores video from CCTV cameras")
-    ContainerDb(video_db, "CCTV DB", "Stores video from cameras")
+    ContainerDb(video_db, "CCTV Storage", "Stores video from cameras")
 
-    Rel(auth_service,users_db,"Requests information about a user")
-    Rel(commands,device,"Sends a command to a device")
-    Rel(devices_management,devices_db,"Requests information about devices owned by a user")
-    Rel(web_app,auth_service,"Requests user's authentication")
-    Rel(web_app,commands,"Sends a command from a user to a device")
-    Rel(web_app,devices_management,"Requests information about device and manages devices")
-    Rel(telemetry,telemetry_db, "")
-    Rel(sensor,telemetry, "Sends readings", HTTPS)
+    Rel(auth_service,users_db,"R/W", "SQL/TCP")
+    Rel(devices_management,device,"Sends a command to a device", HTTPS)
+    Rel(devices_management,devices_db,"R/W", "SQL/TCP")
     Rel(ip_camera,video_service, "Sends a video stream")
-    Rel(video_service,video_db, "")
-    Rel(web_app,video_service, "Requests video from CCTV cameras")
+    Rel(sensor,telemetry, "Sends readings", HTTPS)
+    Rel(telemetry,telemetry_db, "R/W", "SQL/TCP")
+    Rel(video_service,video_db, "R/W", s3)
+    Rel(web_app,auth_service,"Requests user's authentication", "HTTPs/JSON")
+    Rel(web_app,devices_management,"Requests information about device and manages devices", "HTTP/JSON")
+    Rel(web_app,video_service, "Requests video from CCTV cameras", "HTTP/JSON")
 }
 
 Rel(user,web_app,"Manages all devices in the home, adds new devices")
