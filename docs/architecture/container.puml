@@ -3,37 +3,43 @@
 !include C4_Container.puml
 
 Person(user, "User", "A user of the Warmhouse system")
-Container_Ext(device, "Smart devices", "Smart devices, such as relays, switches, etc.")
-Container_Ext(sensor, "Sensors", "Various sensors, such as temperature or motion")
-Container_Ext(ip_camera, "IP camera", "CCTV camera")
+Container_Ext(device, "Smart devices", $descr="Smart devices, such as relays, switches, etc.")
+Container_Ext(sensor, "Sensors", $descr="Various sensors, such as temperature or motion")
+Container_Ext(ipCamera, "IP camera", $descr="CCTV camera")
 
-System_Boundary(warmhouse_system, "Warmhouse") {
-    Container(web_app, "Warmhouse website", "The website that users interact with")
+System_Boundary(warmhouseSystem, "Warmhouse") {
+    Container(webApp, "Warmhouse website", $descr="The website that users interact with")
 
-    Container(devices_management, "Device Management Service", "A service that stores information and device status and allows to register or deregister devices")
-    ContainerDb(devices_db, "Devices db", "A database that stores information about devices")
+    Container(devicesManagement, "Device Management Service", "Backend Service", "A service that stores information and device status and allows to register or deregister devices")
+    ContainerDb(devicesDb, "Devices DB", "A database that stores information about devices")
 
-    Container(auth_service, "Authentication Service", "Authentication service")
-    ContainerDb(users_db, "Users DB", "A database that stores information about users")
+    Container(authService, "Authentication Service", $descr="Service that authenticates users")
+    ContainerDb(usersDb, "Users DB", $descr="A database that stores information about users")
 
-    Container(telemetry, "Telemetry", "A service that stores devices telemetry")
-    ContainerDb(telemetry_db, "Telemetry DB", "Stores time series of sensor readings")
+    Container(telemetry, "Telemetry Service", "Backend Service", "A service that stores devices telemetry")
+    ContainerDb(telemetryDb, "Telemetry DB", $descr="Stores time series of sensor readings")
 
-    Container(video_service, "Video Processing Service", "A service that processes and stores video from CCTV cameras")
-    ContainerDb(video_db, "CCTV Storage", "Stores video from cameras")
+    Container(videoService, "Video Processing Service", "Backend Service", "A service that processes and stores video from CCTV cameras")
+    ContainerDb(videoDb, "Video Storage", $descr="Stores video from cameras")
 
-    Rel(auth_service,users_db,"R/W", "SQL/TCP")
-    Rel(devices_management,device,"Sends a command to a device", HTTPS)
-    Rel(devices_management,devices_db,"R/W", "SQL/TCP")
-    Rel(ip_camera,video_service, "Sends a video stream")
-    Rel(sensor,telemetry, "Sends readings", HTTPS)
-    Rel(telemetry,telemetry_db, "R/W", "InfluxDB Line Protocol")
-    Rel(video_service,video_db, "R/W", s3)
-    Rel(web_app,auth_service,"Requests user's authentication", "HTTPs/JSON")
-    Rel(web_app,devices_management,"Requests information about device and manages devices", "HTTP/JSON")
-    Rel(web_app,video_service, "Requests video from CCTV cameras", "HTTP/JSON")
+    Rel(authService,usersDb,"R/W", "SQL")
+    Rel(devicesManagement,device,"Sends commands and requests state")
+    Rel(devicesManagement,ipCamera,"Sends commands and requests state")
+    Rel(devicesManagement, telemetry, "Requests readings from sensors")
+    Rel(devicesManagement,devicesDb,"R/W", "SQL")
+    Rel(ipCamera,videoService, "Sends a video stream")
+    Rel(sensor,telemetry, "Sends readings")
+    Rel(telemetry,telemetryDb, "R/W", "InfluxDB Line Protocol")
+    Rel(videoService,videoDb, "R/W", s3)
+    Rel(webApp,authService,"Requests user's authentication", "HTTP/JSON")
+    Rel(webApp,devicesManagement,"Requests information about device and manages devices", "HTTP/JSON")
+    Rel(webApp,videoService, "Requests video from CCTV cameras", "HTTP/JSON")
+
+    Rel(devicesManagement, authService, "Validates access token")
+    Rel(telemetry, authService, "Validates access token")
+    Rel(videoService, authService, "Validates access token")
 }
 
-Rel(user,web_app,"Manages all devices in the home, adds new devices")
+Rel(user,webApp,"Manages all devices in the home, adds new devices")
 
 @enduml

@@ -1,7 +1,0 @@
-site_name: Warmhouse Documentation
-theme: readthedocs
-markdown_extensions:
-  - md_in_html
-  - plantuml_markdown
-plugins:
-  - search
