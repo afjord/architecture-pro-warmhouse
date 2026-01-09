@@ -7,7 +7,7 @@ Container_Ext(device, "Smart devices", "Smart devices, such as relays, switches,
 Container_Ext(sensor, "Sensors", "Various sensors, such as temperature or motion")
 Container_Ext(ip_camera, "IP camera", "CCTV camera")
 
-Container_Boundary(warmhouse_system, "Warmhouse") {
+System_Boundary(warmhouse_system, "Warmhouse") {
     Container(web_app, "Warmhouse website", "The website that users interact with")
 
     Container(devices_management, "Device Management Service", "A service that stores information and device status and allows to register or deregister devices")
@@ -27,7 +27,7 @@ Container_Boundary(warmhouse_system, "Warmhouse") {
     Rel(devices_management,devices_db,"R/W", "SQL/TCP")
     Rel(ip_camera,video_service, "Sends a video stream")
     Rel(sensor,telemetry, "Sends readings", HTTPS)
-    Rel(telemetry,telemetry_db, "R/W", "SQL/TCP")
+    Rel(telemetry,telemetry_db, "R/W", "InfluxDB Line Protocol")
     Rel(video_service,video_db, "R/W", s3)
     Rel(web_app,auth_service,"Requests user's authentication", "HTTPs/JSON")
     Rel(web_app,devices_management,"Requests information about device and manages devices", "HTTP/JSON")
