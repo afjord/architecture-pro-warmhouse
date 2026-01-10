@@ -6,15 +6,15 @@ Container_Boundary(deviceMgmt, "Device Management Service") {
     Component(deviceStateApi, "Device State API","REST API","Provides read access to device and sensor state")
     Component(deviceRegistration, "Device Registration Component","Application Service","Registers and unregisters supported devices")
     Component(commandDispatcher, "Command Dispatching Component","Application Service","Validates and dispatches commands to devices")
-    Component(deviceRepository, "Device Repository","Repository","Persists and loads devices and their state")
+    Component(deviceService, "Device Service","Service","Persists and loads devices and their state")
     Component(deviceGateway, "External Device Gateway","Infrastructure Component","Sends commands to physical devices and cameras")
     Component(deviceStateService, "Device State Service","Domain Service","Aggregates device and sensor state")
 }
 
-System(web, "Warmhouse Website")
-System(telemetry, "Telemetry Service")
-System(video, "Video Processing Service")
-System(authService, "Authentication Service")
+System_Ext(web, "Warmhouse Website")
+System_Ext(telemetry, "Telemetry Service")
+System_Ext(video, "Video Processing Service")
+System_Ext(authService, "Authentication Service")
 ContainerDb(devicesDb, "Devices DB")
 
 System_Ext(smartDevices, "Smart Devices")
@@ -27,11 +27,11 @@ Rel(web, commandDispatcher, "Sends commands")
 Rel(deviceStateApi, telemetry, "Requests state")
 Rel(deviceStateApi, video, "Requests state")
 
-Rel(deviceRegistration, deviceRepository, "Reads/Writes")
-Rel(commandDispatcher, deviceRepository, "Reads")
+Rel(deviceRegistration, deviceService, "Reads/Writes")
+Rel(commandDispatcher, deviceService, "Reads")
 
 Rel(deviceStateApi, deviceStateService, "Uses")
-Rel(deviceStateService, deviceRepository, "Reads")
+Rel(deviceStateService, deviceService, "Reads")
 
 Rel(commandDispatcher, deviceGateway, "Dispatches commands via")
 Rel(deviceGateway, smartDevices, "Controls")
@@ -42,6 +42,6 @@ Rel(deviceStateApi, authService, "Validates access token")
 Rel(commandDispatcher, authService, "Validates access token")
 Rel(deviceRegistration, authService, "Validates access token")
 
-Rel(deviceRepository, devicesDb, "Persists data in")
+Rel(deviceService, devicesDb, "Persists data in")
 
 @enduml
