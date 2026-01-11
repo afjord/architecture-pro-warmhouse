@@ -45,7 +45,7 @@
 
 ### 5. Визуализация контекста системы — диаграмма С4
 
-[Диаграмма контекста](docs/architecture/context.png)
+[Диаграмма контекста](docs/architecture/img/context.png)
 
 # Задание 2. Проектирование микросервисной архитектуры
 
@@ -54,11 +54,19 @@
 
 **Диаграмма контейнеров (Containers)**
 
-[Диаграмма контейнеров](docs/architecture/container.png)
+[Диаграмма контейнеров](docs/architecture/img/container.png)
 
 **Диаграмма компонентов (Components)**
 
-Добавьте диаграмму для каждого из выделенных микросервисов.
+[Диаграмма компонента "Authentication Service"](docs/architecture/img/component_auth.png)
+
+[Диаграмма компонента "Device Management Service"](docs/architecture/img/component_device.png)
+
+[Диаграмма компонента "Telemetry Service"](docs/architecture/img/component_telemetry.png)
+
+[Диаграмма компонента "Video Processing"](docs/architecture/img/component_video.png)
+
+[Диаграмма компонента "Warmhouse Website"](docs/architecture/img/component_webapp.png)
 
 **Диаграмма кода (Code)**
 

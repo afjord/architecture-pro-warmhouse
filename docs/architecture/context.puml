@@ -3,8 +3,6 @@
 !NEW_C4_STYLE=1
 !include C4_Context.puml
 
-title "Context diagram of the "Warmhouse""
-
 Person(user, "User", "A user of the Warmhouse system")
 System_Ext(sensor, "Sensors", "Physical sensors installed in the home")
 
