@@ -29,7 +29,7 @@ System_Boundary(warmhouseSystem, "Warmhouse") {
     Rel(devicesManagement, telemetry, "Requests readings from sensors")
     Rel(devicesManagement,devicesDb,"R/W", "SQL")
     Rel(ipCamera,videoService, "Sends a video stream")
-    Rel(sensor,telemetry, "Sends readings")
+    Rel(telemetry, sensor, "Requests readings")
     Rel(telemetry,telemetryDb, "R/W", "InfluxDB Line Protocol")
     Rel(videoService,videoDb, "R/W", s3)
     Rel(webApp,authService,"Requests user's authentication", "HTTP/JSON")

@@ -16,7 +16,7 @@ Container_Ext(authService, "Authentication Service")
 Rel(api, authService, "Validates access token")
 Rel(api, telemetryService, "Uses")
 Rel(telemetryService, telemetryDb, "R/W")
-Rel(sensor, api, "Sends readings")
+Rel(telemetryService, sensor, "Requests  readings")
 Rel(deviceManager, api, "Requests readings from sensors")
 
 @enduml
