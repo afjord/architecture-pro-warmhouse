@@ -1,0 +1,45 @@
+@startuml
+!pragma teoz true
+
+actor User
+participant "Warmhouse Website" as Web
+participant "Device Management API" as API
+participant "Authentication Service" as Auth
+participant "Command Dispatcher" as Dispatcher
+participant "Device Repository" as Repo
+participant "Device Gateway" as Gateway
+participant "Smart Device / IP Camera" as Device
+
+User -> Web : Send command (e.g. turn on)
+Web -> API : POST /devices/{id}/commands\n+ access token
+
+API -> Auth : Validate access token
+Auth --> API : Token valid
+
+API -> Dispatcher : Dispatch command(deviceId, command)
+
+Dispatcher -> Repo : Load device info
+Repo --> Dispatcher : Device + capabilities
+
+alt Command supported
+    Dispatcher -> Gateway : Send command
+    Gateway -> Device : Execute command
+
+    alt Device responds OK
+        Device --> Gateway : ACK
+        Gateway --> Dispatcher : Command result (success)
+        Dispatcher -> Repo : Update device state
+        Dispatcher --> API : Command accepted
+        API --> Web : 200 OK
+    else Device timeout / error
+        Device --> Gateway : Error / No response
+        Gateway --> Dispatcher : Failure
+        Dispatcher --> API : Command failed
+        API --> Web : 422 Unprocessable Entity
+    end
+else Command not supported
+    Dispatcher --> API : Validation error
+    API --> Web : 422 Unprocessable Entity
+end
+
+@enduml
