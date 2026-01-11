@@ -1,5 +1,6 @@
 @startuml
 
+!NEW_C4_STYLE=1
 !include C4_Component.puml
 
 Container_Boundary(deviceMgmt, "Device Management Service") {

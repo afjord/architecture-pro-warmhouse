@@ -1,0 +1,25 @@
+@startuml
+
+!NEW_C4_STYLE=1
+!include C4_Component.puml
+
+Container_Boundary(video, "Video Processing") {
+    Component(api, "Video Management API", "REST API", $descr="Allows to read and manage video")
+    Component(videoService, "Video Service", $descr="Manages video")
+    Component(videoEncoder, "Encoding Video Service", $descr="Encodes video stream from cameras")
+}
+
+Container_Ext(ipCamera, "IP camera", $descr="CCTV camera")
+ContainerDb_Ext(videoDb, "Video Storage", $descr="Stores video from cameras")
+System_Ext(authService, "Authentication Service")
+System_Ext(web, "Warmhouse Website")
+
+Rel(api, videoEncoder, "Sends video stream for encoding")
+Rel(api, videoService, "Reads and manages video")
+Rel(ipCamera, api, "Sends video stream")
+Rel(videoEncoder, videoService, "Sends encoded video for storing")
+Rel(api, authService, "Validates access token")
+Rel(videoService, videoDb, "R/W")
+Rel(web, api, "Reads and manages video")
+
+@enduml

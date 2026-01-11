@@ -1,5 +1,6 @@
 @startuml
 
+!NEW_C4_STYLE=1
 !include C4_Context.puml
 
 Person(user, "User", "A user of the Warmhouse system")
