@@ -11,7 +11,7 @@ Container_Boundary(telemetry, "Telemetry Service") {
 Container_Ext(sensor, "Sensors")
 ContainerDb_Ext(telemetryDb, "Telemetry DB", $descr="Stores time series of sensor readings")
 Container_Ext(deviceManager, "Device Management Service")
-System_Ext(authService, "Authentication Service")
+Container_Ext(authService, "Authentication Service")
 
 Rel(api, authService, "Validates access token")
 Rel(api, telemetryService, "Uses")

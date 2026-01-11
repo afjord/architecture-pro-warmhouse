@@ -12,11 +12,11 @@ Container_Boundary(deviceMgmt, "Device Management Service") {
     Component(deviceStateService, "Device State Service","Domain Service","Aggregates device and sensor state")
 }
 
-System_Ext(web, "Warmhouse Website")
-System_Ext(telemetry, "Telemetry Service")
-System_Ext(video, "Video Processing Service")
-System_Ext(authService, "Authentication Service")
-ContainerDb(devicesDb, "Devices DB")
+Container_Ext(web, "Warmhouse Website")
+Container_Ext(telemetry, "Telemetry Service")
+Container_Ext(video, "Video Processing Service")
+Container_Ext(authService, "Authentication Service")
+ContainerDb_Ext(devicesDb, "Devices DB")
 
 System_Ext(smartDevices, "Smart Devices")
 System_Ext(ipCamera, "IP Camera")
