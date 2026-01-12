@@ -2,6 +2,7 @@ package org.example;
 
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,5 +36,16 @@ public class TemperatureController {
             };
         }
         return TemperatureData.getRandom(location, sensorId);
+    }
+
+    @GetMapping("temperature/{id}")
+    public TemperatureData getTemperatureBySensorId(@PathVariable String id) {
+        String location = switch (id) {
+            case "1" -> "Living Room";
+            case "2" -> "Bedroom";
+            case "3" -> "Kitchen";
+            default -> "Unknown";
+        };
+        return TemperatureData.getRandom(location, id);
     }
 }
