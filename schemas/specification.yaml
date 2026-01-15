@@ -3,7 +3,7 @@ info:
   title: Warmhouse API
   version: 1.0.0
 servers:
-  - url: https://api.warmhouse.local/telemetry
+  - url: https://warmhouse.com
 security:
   - bearerAuth: [ ]
 tags:
@@ -30,52 +30,65 @@ components:
         - email
         - password
     device:
-      type: object
-      required:
-        - id
-        - name
-        - typeId
-        - homeId
-        - state
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        typeId:
-          type: string
-          format: uuid
-        homeId:
-          type: string
-          format: uuid
-        state:
-          $ref: '#/components/schemas/deviceState'
-        lastSeenAt:
-          type: string
-          format: date-time
-    deviceCreateRequest:
-      type: object
-      required:
-        - name
-        - typeId
-        - homeId
-      properties:
-        name:
-          type: string
-        typeId:
-          type: string
-          format: uuid
-        homeId:
-          type: string
-          format: uuid
+      allOf:
+        - type: object
+          required:
+            - id
+            - homeId
+            - status
+          properties:
+            id:
+              type: integer
+              format: int64
+            status:
+              type: string
+            lastUpdated:
+              type: string
+              format: date-time
+            createdAt:
+              type: string
+              format: date-time
+            homeId:
+              type: string
+              format: uuid
+            value:
+              type: number
+              format: double
+        - $ref: '#/components/schemas/deviceCreateRequest'
     deviceUpdateRequest:
       type: object
       properties:
+        homeId:
+          type: string
+          format: uuid
         name:
           type: string
-        state:
-          $ref: '#/components/schemas/deviceState'
+        type:
+          type: string
+        location:
+          type: string
+        unit:
+          type: string
+    deviceCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/deviceUpdateRequest'
+        - type: object
+          required:
+            - name
+            - type
+            - location
+            - unit
+    devicePatchRequest:
+      type: object
+      properties:
+        value:
+          type: number
+          format: double
+        status:
+          type: string
+      required:
+        - status
+        - value
     deviceCommandRequest:
       type: object
       required:
@@ -85,17 +98,6 @@ components:
           type: string
           example: TURN_ON
         parameters:
-          type: object
-          additionalProperties:
-            type: string
-    deviceState:
-      type: object
-      description: Current device state snapshot
-      properties:
-        status:
-          type: string
-          enum: [ ONLINE, OFFLINE, ERROR ]
-        attributes:
           type: object
           additionalProperties:
             type: string
@@ -115,13 +117,14 @@ components:
         - recordedAt
       properties:
         deviceId:
-          type: string
-          format: uuid
+          type: integer
+          format: int64
         metric:
           type: string
           example: temperature
         value:
           type: number
+          format: double
           example: 23.4
         recordedAt:
           type: string
@@ -177,7 +180,7 @@ paths:
   /auth/token:
     post:
       summary: Authenticate
-      tags: [ devices ]
+      tags: [ auth ]
       security: [ ]
       requestBody:
         required: true
@@ -300,6 +303,20 @@ paths:
           description: Invalid request
         '401':
           description: Unauthorized
+    get:
+      summary: Read all devices
+      tags: [ devices ]
+      responses:
+        '200':
+          description: Device info
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/device'
+        '401':
+          description: Unauthorized
   /devices/{deviceId}:
     get:
       summary: Get device information
@@ -309,8 +326,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
       responses:
         '200':
           description: Device info
@@ -323,21 +339,48 @@ paths:
         '404':
           description: Device not found
     put:
-      summary: Update device information and/or state
+      summary: Update device
       tags: [ devices ]
       parameters:
         - name: deviceId
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/deviceUpdateRequest'
+              $ref: '#/components/schemas/deviceCreateRequest'
+      responses:
+        '200':
+          description: Device updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/device'
+        '400':
+          description: Invalid update
+        '401':
+          description: Unauthorized
+        '404':
+          description: Device not found
+    patch:
+      summary: Update device value and/or state
+      tags: [ devices ]
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/devicePatchRequest'
       responses:
         '200':
           description: Device updated
@@ -360,8 +403,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
       requestBody:
         required: true
         content:
@@ -377,49 +419,24 @@ paths:
           description: Unauthorized
         '404':
           description: Device not found
-  /devices/{deviceId}/telemetry:
+  /telemetry/devices/{deviceId}:
     get:
-      summary: Get telemetry for a specific device
+      summary: Get actual device reading
       tags: [ telemetry ]
       parameters:
         - name: deviceId
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
-        - name: metric
-          in: query
-          description: Metric name to filter
-          schema:
-            type: string
-        - name: from
-          in: query
-          description: Start time (ISO-8601)
-          schema:
-            type: string
-            format: date-time
-        - name: to
-          in: query
-          description: End time (ISO-8601)
-          schema:
-            type: string
-            format: date-time
-        - name: limit
-          in: query
-          schema:
             type: integer
-            default: 100
-            maximum: 1000
+            format: int64
       responses:
         '200':
           description: Telemetry data
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/telemetryResponse'
+                $ref: '#/components/schemas/telemetryResponse'
         '401':
           description: Unauthorized
         '404':

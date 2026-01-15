@@ -1,0 +1,90 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.0.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.openapi.generator' version '7.17.0'
+}
+
+group = 'com.smarthome'
+version = '0.0.1-SNAPSHOT'
+description = 'telemetry'
+
+ext['codeGenDirBase'] = layout.buildDirectory.file('generated').get()
+ext['specsDir'] = "$projectDir/../../schemas"
+ext['mapstructVersion'] = '1.6.3'
+
+sourceSets.main.java.srcDir "$codeGenDirBase/src/main/java"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'org.postgresql:postgresql'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:5.0.0'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.8'
+
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.41'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+void initFeignGenerator(GenerateTask task, String specFilename, String basePackage) {
+    task.generatorName.set('spring')
+    task.library.set('spring-cloud')
+    task.inputSpec.set("${project['specsDir']}/$specFilename".toString())
+    task.outputDir.set("${project['codeGenDirBase']}")
+    task.apiPackage.set(basePackage)
+    task.invokerPackage.set(basePackage + ".invoker")
+
+    task.modelPackage.set(basePackage + ".model")
+    task.configOptions.put('useJakartaEe', 'true')
+    task.configOptions.put('interfaceOnly', 'true')
+    task.configOptions.put('useTags', 'true')
+    task.configOptions.put('additionalModelTypeAnnotations', '@lombok.experimental.FieldNameConstants')
+    task.configOptions.put('containerDefaultToNull', 'true')
+    task.typeMappings.put('string+local-date-time', 'LocalDateTime')
+    task.importMappings.put('LocalDateTime', 'java.time.LocalDateTime')
+}
+
+tasks.register('generator', GenerateTask) {
+    initFeignGenerator(it, 'specification.yaml', 'com.smarthome')
+}
+
+compileJava {
+    configure(options) {
+        options.compilerArgs
+                << '-Amapstruct.defaultComponentModel=spring'
+                << '-Amapstruct.defaultInjectionStrategy=constructor'
+                << '-Amapstruct.unmappedTargetPolicy=ERROR'
+    }
+
+    dependsOn tasks.generator
+}

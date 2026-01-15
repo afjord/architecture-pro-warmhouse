@@ -5,35 +5,34 @@ skinparam linetype ortho
 entity "User" as user {
   +id: UUID <<PK>>
   --
-  email: text
-  password: text
-  name: text
-  created_at: timestamp with timezone
+  +email: text
+  +password: text
+  +name: text
+  +created_at: timestamp with timezone
+  +last_updated: timestamp with timezone
 }
 
 entity "Home" as home {
   +id: UUID <<PK>>
+  +user_id: UUID <<FK>>
   --
   name: text
   address: text
 }
 
 entity "Device" as device {
-  +id: UUID <<PK>>
+  +id: serial <<PK>>
   --
   +home_id: UUID <<FK>>
-  +type_id: UUID <<FK>>
-  +serial_number: text
-  name: text
-  status: DeviceStatus
-  last_seen_at: timestamp with timezone
-}
-
-entity "DeviceType" as deviceType {
-  +id: UUID <<PK>>
-  --
-  code: text
-  description: text
+  +type: text
+  +location: text
+  +name: text
+  +status: text
+  +unit: text
+  value: double
+  serial_number: text
+  last_updated: timestamp with timezone
+  created_at: timestamp with timezone
 }
 
 entity "Telemetry" as telemetry {
@@ -47,7 +46,6 @@ entity "Telemetry" as telemetry {
 
 user ||--o{ home: owns
 home ||--o{ device: contains
-device }o--|| deviceType: has
 device ||--o{ telemetry: produces
 
 @enduml
