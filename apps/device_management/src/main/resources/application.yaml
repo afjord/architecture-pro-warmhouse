@@ -11,13 +11,7 @@ server:
 spring:
   application.name: telemetry
   datasource:
-    url: "${DATABASE_URL:jdbc:postgresql://localhost:5433/device_management}"
+    url: "${DATABASE_URL:jdbc:postgresql://localhost:5432/device_management}"
     username: "${POSTGRES_USER:postgres}"
     password: "${POSTGRES_PASSWORD:postgres}"
-  cloud:
-    openfeign:
-      client:
-        config:
-          telemetryClient:
-            url: ${TELEMETRY_URL:http://localhost:8082}
 temperature.api.url: "${TEMPERATURE_API_URL:http://localhost:8081}"

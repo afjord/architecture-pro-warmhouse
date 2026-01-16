@@ -1,25 +1,9 @@
 version: '3.8'
 
+networks:
+  smarthome-network:
+    driver: bridge
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: smarthome-postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./smart_home/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    restart: unless-stopped
-    networks:
-      - smarthome-network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d postgres" ]
-      interval: 10s
-      timeout: 2s
-      retries: 5
   temperature-api:
     build:
       context: ./temperature-api
@@ -34,7 +18,17 @@ services:
     build:
       context: ../
       dockerfile: Dockerfile_dm
+    depends_on:
+      device-management-postgres:
+        condition: service_started
+      temperature-api:
+        condition: service_started
     container_name: device-management-app
+    environment:
+      DATABASE_URL: jdbc:postgresql://device-management-postgres:5432/device_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      TEMPERATURE_API_URL: http://temperature-api:8081
     ports:
       - "8083:8083"
     restart: unless-stopped
@@ -51,7 +45,6 @@ services:
       device-management:
         condition: service_started
     environment:
-      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/smarthome
       - TEMPERATURE_API_URL=http://temperature-api:8081
       - DEVICE_MANAGEMENT_URL=http://device-management:8083
     ports:
@@ -64,9 +57,9 @@ services:
     container_name: device-management-postgres
     hostname: dmp
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
-      - ./device_management/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./apps/device_management/init.sql:/docker-entrypoint-initdb.d/init.sql
       - postgres_dm:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
@@ -79,11 +72,5 @@ services:
       interval: 10s
       timeout: 2s
       retries: 5
-
 volumes:
-  postgres_data:
   postgres_dm:
-
-networks:
-  smarthome-network:
-    driver: bridge
