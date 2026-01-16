@@ -159,7 +159,7 @@ func (c *DevicesAPIClient) DeleteSensor(ctx context.Context, id int) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("sensor api returned %d", resp.StatusCode)
 	}
 

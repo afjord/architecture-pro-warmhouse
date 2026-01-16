@@ -35,6 +35,7 @@ public class DeviceService {
     }
 
     public void deleteSensor(Integer id) {
+        getById(id).orElseThrow(EntityNotFoundException::new);
         sensorRepository.deleteById(id);
     }
 

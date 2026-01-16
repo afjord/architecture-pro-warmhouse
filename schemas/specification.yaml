@@ -394,6 +394,22 @@ paths:
           description: Unauthorized
         '404':
           description: Device not found
+    delete:
+      summary: Delete device by id
+      tags: [ devices ]
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Device deleted
+        '401':
+          description: Unauthorized
+        '404':
+          description: Device not found
   /devices/{deviceId}/commands:
     post:
       summary: Send a command to a device

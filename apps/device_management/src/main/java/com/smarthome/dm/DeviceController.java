@@ -23,6 +23,12 @@ public class DeviceController implements DevicesApi {
     private final ValueReader valueReader;
 
     @Override
+    public ResponseEntity<Void> devicesDeviceIdDelete(Integer deviceId) {
+        service.deleteSensor(deviceId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+    }
+
+    @Override
     public ResponseEntity<Device> devicesDeviceIdGet(Integer deviceId) {
         return service.getById(deviceId)
                 .map(mapper::map)
