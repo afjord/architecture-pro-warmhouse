@@ -32,8 +32,8 @@ services:
       - smarthome-network
   device-management:
     build:
-      context: ./device_management
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: Dockerfile_dm
     container_name: device-management-app
     ports:
       - "8083:8083"
@@ -46,8 +46,6 @@ services:
       dockerfile: Dockerfile
     container_name: smarthome-app
     depends_on:
-      postgres:
-        condition: service_healthy
       temperature-api:
         condition: service_started
       device-management:

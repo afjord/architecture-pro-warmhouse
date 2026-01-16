@@ -1,0 +1,11 @@
+FROM gradle:9.2.1-jdk25 as builder
+COPY schemas /schemas
+COPY /apps/device_management /apps/device_management
+WORKDIR /apps/device_management
+RUN gradle clean build
+RUN ls -al /apps/device_management/build/libs/
+
+FROM amazoncorretto:25-jdk
+COPY --from=builder /apps/device_management/build/libs/device-management.jar app.jar
+EXPOSE 8083
+CMD ["java", "-jar", "app.jar"]

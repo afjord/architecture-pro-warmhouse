@@ -8,8 +8,7 @@ plugins {
 }
 
 group = 'com.smarthome'
-version = '0.0.1-SNAPSHOT'
-description = 'telemetry'
+description = 'Device management'
 
 ext['codeGenDirBase'] = layout.buildDirectory.file('generated').get()
 ext['specsDir'] = "$projectDir/../../schemas"
