@@ -9,19 +9,19 @@ Container_Ext(sensor, "Sensors", $descr="Various sensors, such as temperature or
 Container_Ext(ipCamera, "IP camera", $descr="CCTV camera")
 
 System_Boundary(warmhouseSystem, "Warmhouse") {
-    Container(webApp, "Warmhouse website", $descr="The website that users interact with")
+    Container(webApp, "Warmhouse website", "React + TypeScript", $descr="Single-page application for managing devices")
 
-    Container(devicesManagement, "Device Management Service", "Backend Service", "A service that stores information and device status and allows to register or deregister devices")
-    ContainerDb(devicesDb, "Devices DB", "A database that stores information about devices")
+    Container(devicesManagement, "Device Management Service", "Java 25 + Spring Boot", "A service that stores information and device status and allows to register or deregister devices")
+    ContainerDb(devicesDb, "Devices DB", "PostgreSQL", "A database that stores information about devices")
 
-    Container(authService, "Authentication Service", $descr="Service that authenticates users")
-    ContainerDb(usersDb, "Users DB", $descr="A database that stores information about users")
+    Container(authService, "Authentication Service", "Java 25 + Spring Boot", $descr="Service that authenticates users")
+    ContainerDb(usersDb, "Users DB", "PostgreSQL", $descr="A database that stores information about users")
 
-    Container(telemetry, "Telemetry Service", "Backend Service", "A service that stores devices telemetry")
-    ContainerDb(telemetryDb, "Telemetry DB", $descr="Stores time series of sensor readings")
+    Container(telemetry, "Telemetry Service", "Java 25 + Spring Boot", "A service that stores devices telemetry")
+    ContainerDb(telemetryDb, "Telemetry DB", "InfluxDB", $descr="Stores time series of sensor readings")
 
-    Container(videoService, "Video Processing Service", "Backend Service", "A service that processes and stores video from CCTV cameras")
-    ContainerDb(videoDb, "Video Storage", $descr="Stores video from cameras")
+    Container(videoService, "Video Processing Service", "Java 25 + Spring Boot", "Backend Service", "A service that processes and stores video from CCTV cameras")
+    ContainerDb(videoDb, "Video Storage", "AWS S3", $descr="Stores video from cameras")
 
     Rel(authService,usersDb,"R/W", "SQL")
     Rel(devicesManagement,device,"Sends commands and requests state")

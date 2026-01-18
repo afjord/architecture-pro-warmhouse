@@ -44,7 +44,7 @@ entity "Telemetry" as telemetry {
   recorded_at: timestamp with timezone
 }
 
-user ||--o{ home: owns
+user }|--o{ home: owns
 home ||--o{ device: contains
 device ||--o{ telemetry: produces
 
