@@ -1,0 +1,51 @@
+@startuml
+hide circle
+skinparam linetype ortho
+
+entity "User" as user {
+  +id: UUID <<PK>>
+  --
+  +email: text
+  +password: text
+  +name: text
+  +created_at: timestamp with timezone
+  +last_updated: timestamp with timezone
+}
+
+entity "Home" as home {
+  +id: UUID <<PK>>
+  +user_id: UUID <<FK>>
+  --
+  name: text
+  address: text
+}
+
+entity "Device" as device {
+  +id: serial <<PK>>
+  --
+  +home_id: UUID <<FK>>
+  +type: text
+  +location: text
+  +name: text
+  +status: text
+  +unit: text
+  value: double
+  serial_number: text
+  last_updated: timestamp with timezone
+  created_at: timestamp with timezone
+}
+
+entity "Telemetry" as telemetry {
+  +id: UUID <<PK>>
+  --
+  + device_id: UUID <<FK>>
+  metric: text
+  value: text
+  recorded_at: timestamp with timezone
+}
+
+user }|--o{ home: owns
+home ||--o{ device: contains
+device ||--o{ telemetry: produces
+
+@enduml

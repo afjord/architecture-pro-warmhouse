@@ -1,0 +1,27 @@
+@startuml
+
+!NEW_C4_STYLE=1
+!include C4_Component.puml
+
+Container_Boundary(auth, "Authentication Service") {
+    Component(api, "Authentication API", "REST API", $descr="Allows generating and refreshing access tokens")
+    Component(usersService, "Users Service", $descr="Allows to read and write information about users")
+    Component(password, "Password Hashing Component", $descr="Encrypts and verifies passwords")
+}
+
+Container_Ext(web, "Warmhouse Website")
+Container_Ext(telemetry, "Telemetry Service")
+Container_Ext(video, "Video Processing Service")
+ContainerDb_Ext(usersDb, "Users DB", $descr="Stores information about users")
+Container_Ext(deviceManager, "Device Management Service")
+
+Rel(telemetry, api, "Validates access token")
+Rel(video, api, "Validates access token")
+Rel(deviceManager, api, "Validates access token")
+Rel(web, api, "Authenticates users and manages tokens")
+Rel(web, api, "Registers and manages users")
+Rel(usersService, usersDb, "R/W")
+Rel(usersService, password, "Hashes and verifies passwords")
+Rel(api, usersService, "Uses")
+
+@enduml

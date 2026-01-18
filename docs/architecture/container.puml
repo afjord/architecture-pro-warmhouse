@@ -1,0 +1,46 @@
+@startuml
+
+!NEW_C4_STYLE=1
+!include C4_Container.puml
+
+Person(user, "User", "A user of the Warmhouse system")
+Container_Ext(device, "Smart devices", $descr="Smart devices, such as relays, switches, etc.")
+Container_Ext(sensor, "Sensors", $descr="Various sensors, such as temperature or motion")
+Container_Ext(ipCamera, "IP camera", $descr="CCTV camera")
+
+System_Boundary(warmhouseSystem, "Warmhouse") {
+    Container(webApp, "Warmhouse website", "React + TypeScript", $descr="Single-page application for managing devices")
+
+    Container(devicesManagement, "Device Management Service", "Java 25 + Spring Boot", "A service that stores information and device status and allows to register or deregister devices")
+    ContainerDb(devicesDb, "Devices DB", "PostgreSQL", "A database that stores information about devices")
+
+    Container(authService, "Authentication Service", "Java 25 + Spring Boot", $descr="Service that authenticates users")
+    ContainerDb(usersDb, "Users DB", "PostgreSQL", $descr="A database that stores information about users")
+
+    Container(telemetry, "Telemetry Service", "Java 25 + Spring Boot", "A service that stores devices telemetry")
+    ContainerDb(telemetryDb, "Telemetry DB", "InfluxDB", $descr="Stores time series of sensor readings")
+
+    Container(videoService, "Video Processing Service", "Java 25 + Spring Boot", "Backend Service", "A service that processes and stores video from CCTV cameras")
+    ContainerDb(videoDb, "Video Storage", "AWS S3", $descr="Stores video from cameras")
+
+    Rel(authService,usersDb,"R/W", "SQL")
+    Rel(devicesManagement,device,"Sends commands and requests state")
+    Rel(devicesManagement,ipCamera,"Sends commands and requests state")
+    Rel(devicesManagement, telemetry, "Requests readings from sensors")
+    Rel(devicesManagement,devicesDb,"R/W", "SQL")
+    Rel(ipCamera,videoService, "Sends a video stream")
+    Rel(telemetry, sensor, "Requests readings")
+    Rel(telemetry,telemetryDb, "R/W", "InfluxDB Line Protocol")
+    Rel(videoService,videoDb, "R/W", s3)
+    Rel(webApp,authService,"Requests user's authentication", "HTTP/JSON")
+    Rel(webApp,devicesManagement,"Requests information about device and manages devices", "HTTP/JSON")
+    Rel(webApp,videoService, "Requests video from CCTV cameras", "HTTP/JSON")
+
+    Rel(devicesManagement, authService, "Validates access token")
+    Rel(telemetry, authService, "Validates access token")
+    Rel(videoService, authService, "Validates access token")
+}
+
+Rel(user,webApp,"Manages all devices in the home, adds new devices")
+
+@enduml

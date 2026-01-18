@@ -1,0 +1,22 @@
+@startuml
+
+!NEW_C4_STYLE=1
+!include C4_Component.puml
+
+Container_Boundary(telemetry, "Telemetry Service") {
+    Component(api, "Telemetry Management API", "REST API", $descr="Allows to access and manage readings from sensors")
+    Component(telemetryService, "Telemetry Domain Service", $descr="Manages sensors readings")
+}
+
+Container_Ext(sensor, "Sensors")
+ContainerDb_Ext(telemetryDb, "Telemetry DB", $descr="Stores time series of sensor readings")
+Container_Ext(deviceManager, "Device Management Service")
+Container_Ext(authService, "Authentication Service")
+
+Rel(api, authService, "Validates access token")
+Rel(api, telemetryService, "Uses")
+Rel(telemetryService, telemetryDb, "R/W")
+Rel(telemetryService, sensor, "Requests  readings")
+Rel(deviceManager, api, "Requests readings from sensors")
+
+@enduml

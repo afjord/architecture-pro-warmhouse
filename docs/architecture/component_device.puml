@@ -1,0 +1,48 @@
+@startuml
+
+!NEW_C4_STYLE=1
+!include C4_Component.puml
+
+Container_Boundary(deviceMgmt, "Device Management Service") {
+    Component(deviceStateApi, "Device State API","REST API","Provides read access to device and sensor state")
+    Component(deviceRegistration, "Device Registration Component","Application Service","Registers and unregisters supported devices")
+    Component(commandDispatcher, "Command Dispatching Component","Application Service","Validates and dispatches commands to devices")
+    Component(deviceService, "Device Service","Service","Persists and loads devices and their state")
+    Component(deviceGateway, "External Device Gateway","Infrastructure Component","Sends commands to physical devices and cameras")
+    Component(deviceStateService, "Device State Service","Domain Service","Aggregates device and sensor state")
+}
+
+Container_Ext(web, "Warmhouse Website")
+Container_Ext(telemetry, "Telemetry Service")
+Container_Ext(video, "Video Processing Service")
+Container_Ext(authService, "Authentication Service")
+ContainerDb_Ext(devicesDb, "Devices DB")
+
+System_Ext(smartDevices, "Smart Devices")
+System_Ext(ipCamera, "IP Camera")
+
+Rel(web, deviceStateApi, "Requests device state")
+Rel(web, deviceRegistration, "Registers/unregisters devices")
+Rel(web, commandDispatcher, "Sends commands")
+
+Rel(deviceStateApi, telemetry, "Requests state")
+Rel(deviceStateApi, video, "Requests state")
+
+Rel(deviceRegistration, deviceService, "Reads/Writes")
+Rel(commandDispatcher, deviceService, "Reads")
+
+Rel(deviceStateApi, deviceStateService, "Uses")
+Rel(deviceStateService, deviceService, "Reads")
+
+Rel(commandDispatcher, deviceGateway, "Dispatches commands via")
+Rel(deviceGateway, smartDevices, "Controls")
+Rel(deviceGateway, ipCamera, "Controls")
+
+
+Rel(deviceStateApi, authService, "Validates access token")
+Rel(commandDispatcher, authService, "Validates access token")
+Rel(deviceRegistration, authService, "Validates access token")
+
+Rel(deviceService, devicesDb, "Persists data in")
+
+@enduml

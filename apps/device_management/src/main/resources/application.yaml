@@ -1,0 +1,17 @@
+logging:
+  level:
+    org:
+      springframework:
+        web:
+          filter:
+            CommonsRequestLoggingFilter: DEBUG
+management.endpoints.web.base-path: /
+server:
+  port: 8083
+spring:
+  application.name: telemetry
+  datasource:
+    url: "${DATABASE_URL:jdbc:postgresql://localhost:5432/device_management}"
+    username: "${POSTGRES_USER:postgres}"
+    password: "${POSTGRES_PASSWORD:postgres}"
+temperature.api.url: "${TEMPERATURE_API_URL:http://localhost:8081}"

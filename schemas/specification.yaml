@@ -1,0 +1,519 @@
+openapi: 3.0.3
+info:
+  title: Warmhouse API
+  version: 1.0.0
+servers:
+  - url: https://warmhouse.com
+security:
+  - bearerAuth: [ ]
+tags:
+  - name: auth
+  - name: devices
+  - name: telemetry
+  - name: metadata
+  - name: video
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    credentials:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+    device:
+      allOf:
+        - type: object
+          required:
+            - id
+            - homeId
+            - status
+          properties:
+            id:
+              type: integer
+              format: int64
+            status:
+              type: string
+            lastUpdated:
+              type: string
+              format: date-time
+            createdAt:
+              type: string
+              format: date-time
+            homeId:
+              type: string
+              format: uuid
+            value:
+              type: number
+              format: double
+        - $ref: '#/components/schemas/deviceCreateRequest'
+    deviceUpdateRequest:
+      type: object
+      properties:
+        homeId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          type: string
+        location:
+          type: string
+        unit:
+          type: string
+    deviceCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/deviceUpdateRequest'
+        - type: object
+          required:
+            - name
+            - type
+            - location
+            - unit
+    devicePatchRequest:
+      type: object
+      properties:
+        value:
+          type: number
+          format: double
+        status:
+          type: string
+      required:
+        - status
+        - value
+    deviceCommandRequest:
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          type: string
+          example: TURN_ON
+        parameters:
+          type: object
+          additionalProperties:
+            type: string
+    errorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+    telemetry:
+      type: object
+      required:
+        - deviceId
+        - metric
+        - value
+        - recordedAt
+      properties:
+        deviceId:
+          type: integer
+          format: int64
+        metric:
+          type: string
+          example: temperature
+        value:
+          type: number
+          format: double
+          example: 23.4
+        recordedAt:
+          type: string
+          format: date-time
+    telemetryResponse:
+      allOf:
+        - $ref: '#/components/schemas/telemetry'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+    videoRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        cameraId:
+          type: string
+          format: uuid
+        startedAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+        playbackUrl:
+          type: string
+    videoStreamInfo:
+      type: object
+      properties:
+        cameraId:
+          type: string
+          format: uuid
+        streamUrl:
+          type: string
+        type:
+          type: string
+          enum: [ LIVE, RECORDED ]
+    videoUploadRequest:
+      type: object
+      required:
+        - cameraId
+      properties:
+        cameraId:
+          type: string
+          format: uuid
+        format:
+          type: string
+          example: h264
+paths:
+  /auth/token:
+    post:
+      summary: Authenticate
+      tags: [ auth ]
+      security: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/credentials'
+      responses:
+        200:
+          description: User authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deviceCreateRequest'
+        403:
+          description: Invalid credentials
+  /cameras/{cameraId}/live:
+    get:
+      summary: Get live video stream from camera
+      tags: [ video ]
+      parameters:
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Live stream info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/videoStreamInfo'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Camera not found
+  /cameras/{cameraId}/records:
+    get:
+      summary: Get recorded videos from camera
+      tags: [ video ]
+      parameters:
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: List of recorded videos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/videoRecord'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Camera not found
+  /cameras/{cameraId}/records/{recordId}:
+    get:
+      summary: Download recorded video
+      tags: [ video ]
+      parameters:
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '302':
+          description: Redirect to video file storage
+          headers:
+            Location:
+              description: Signed URL to video file
+              schema:
+                type: string
+        '401':
+          description: Unauthorized
+        '404':
+          description: Video not found
+  /devices:
+    post:
+      summary: Register a new device
+      tags: [ devices ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deviceCreateRequest'
+      responses:
+        '201':
+          description: Device created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/device'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+    get:
+      summary: Read all devices
+      tags: [ devices ]
+      responses:
+        '200':
+          description: Device info
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/device'
+        '401':
+          description: Unauthorized
+  /devices/{deviceId}:
+    get:
+      summary: Get device information
+      tags: [ devices ]
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Device info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/device'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Device not found
+    put:
+      summary: Update device
+      tags: [ devices ]
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deviceCreateRequest'
+      responses:
+        '200':
+          description: Device updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/device'
+        '400':
+          description: Invalid update
+        '401':
+          description: Unauthorized
+        '404':
+          description: Device not found
+    patch:
+      summary: Update device value and/or state
+      tags: [ devices ]
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/devicePatchRequest'
+      responses:
+        '200':
+          description: Device updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/device'
+        '400':
+          description: Invalid update
+        '401':
+          description: Unauthorized
+        '404':
+          description: Device not found
+    delete:
+      summary: Delete device by id
+      tags: [ devices ]
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Device deleted
+        '401':
+          description: Unauthorized
+        '404':
+          description: Device not found
+  /devices/{deviceId}/commands:
+    post:
+      summary: Send a command to a device
+      tags: [ Commands ]
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/deviceCommandRequest'
+      responses:
+        '202':
+          description: Command accepted for processing
+        '400':
+          description: Invalid command
+        '401':
+          description: Unauthorized
+        '404':
+          description: Device not found
+  /telemetry/devices/{deviceId}:
+    get:
+      summary: Get actual device reading
+      tags: [ telemetry ]
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Telemetry data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/telemetryResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Device not found
+  /metrics:
+    get:
+      summary: List supported telemetry metrics
+      tags: [ metadata ]
+      responses:
+        '200':
+          description: List of metrics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  example: temperature
+  /telemetry:
+    post:
+      summary: Ingest telemetry data from device
+      description: Accepts telemetry readings from sensors or devices
+      tags: [ telemetry ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/telemetry'
+      responses:
+        '202':
+          description: Telemetry accepted for processing
+        '400':
+          description: Invalid telemetry payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '401':
+          description: Unauthorized
+  /video/upload:
+    post:
+      summary: Upload video stream from camera
+      tags: [ video ]
+      security: [ ]   # camera authenticates differently (e.g. device token)
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      parameters:
+        - name: cameraId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Video accepted for processing
+        '400':
+          description: Invalid video stream

@@ -1,0 +1,21 @@
+@startuml
+
+!NEW_C4_STYLE=1
+!include C4_Component.puml
+
+Container_Boundary(webapp, "Warmhouse Website") {
+    Component(authComponent, "Login Component", "UI Component", $descr="Authenticates user and manages authentication state")
+    Component(deviceComponent, "Device Manager", "UI Component", $descr="Allows to manage devices: add, remove, observe. Allows to send commands to devices")
+    Component(videoComponent, "Video Component", "UI Component", $descr="Allows to watch life or recorded videos from cameras")
+    Component(accountComponent, "Personal Account Component", "UI Component", $descr="Manages information about user and credentials")
+}
+
+Container_Ext(deviceMgr, "Device Management Service")
+Container_Ext(video, "Video Processing Service")
+Container_Ext(authService, "Authentication Service")
+
+Rel(authComponent, authService, "Generating auth token")
+Rel(accountComponent, authService, "Manages user's personal information")
+Rel(deviceComponent, deviceMgr, "Manages all devices")
+Rel(videoComponent, video, "Requests video")
+@enduml
